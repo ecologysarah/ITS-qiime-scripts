@@ -31,13 +31,24 @@ if [ ! -d "${myDir}"/02-trim ]
         then mkdir ${myDir}/02-trim
 fi
 
-##Loop over each sample in turn
+## Find the number of samples
+sampleNo=$(cat ${myDir}/01-download/SampleFileNames.txt | wc -l)
 
-for sampleID in $sampleIDs
+## Set up a slurm array. Each array will process (up to) a thousand samples.
+## Create a bash array of numbers incrementing by thousands up to the number of samples. This will be used to determine how many samples are processed in each slurm array, and the correct line for each slurm array to start at in SampleFileNames.txt
+loopSetup=( $(echo `seq 0 1000 ${sampleNo}` ${sampleNo}) )
+
+## Loop over each index of loopSetup except the last (as this is used to determine the end point, not to launch a slurm array).
+index=0
+while [[ $index < $(( ${#loopSetup[@]} -1 )) ]]
+
 do
 
-        ## write a script to the temp/ directory (one for each sample)
-        scriptName=${myDir}/temp/${scriptBase}.${sampleID}.sh
+        ## Calculate the number of samples for the array
+        nSamps=$(( ${loopSetup[(($index + 1))]} - ${loopSetup[$index]} ))
+
+        ## write the script to the temp/ directory
+        scriptName=${myDir}/temp/${scriptBase}${index}.sh
 
         ## make an empty script for writing
         touch ${scriptName}
@@ -79,6 +90,8 @@ do
 
         ## submit the script to the compute queue
         sbatch ${scriptName}
+
+        index=$(( $index + 1))
 
 done
 

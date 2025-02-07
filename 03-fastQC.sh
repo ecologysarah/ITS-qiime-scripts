@@ -35,13 +35,29 @@ do
         fi
 done
 
-#For each sample in turn, create and run a slurm script that will do FastQC
-for sampleID in $sampleIDs
-do
-	scriptName=${myDir}/temp/${scriptBase}.${sampleID}.sh
-	rm -rf ${scriptName} || true
-	touch ${scriptName}
+## Find the number of samples
+sampleNo=$(cat ${myDir}/01-download/SampleFileNames.txt | wc -l)
 
+## Set up a slurm array. Each array will process (up to) a thousand samples.
+## Create a bash array of numbers incrementing by thousands up to the number of samples. This will be used to determine how many samples are processed in each slurm array, and the correct line for each slurm array to start at in SampleFileNames.txt
+loopSetup=( $(echo `seq 0 1000 ${sampleNo}` ${sampleNo}) )
+
+## Loop over each index of loopSetup except the last (as this is used to determine the end point, not to launch a slurm array).
+index=0
+while [[ $index < $(( ${#loopSetup[@]} -1 )) ]]
+
+do
+
+        ## Calculate the number of samples for the array
+        nSamps=$(( ${loopSetup[(($index + 1))]} - ${loopSetup[$index]} ))
+
+        ## write the script to the temp/ directory
+        scriptName=${myDir}/temp/${scriptBase}${index}.sh
+
+        ## make an empty script for writing
+        touch ${scriptName}
+
+        ## write the SLURM parameters to the top of the script
 	echo "#!/bin/bash" >> ${scriptName} 
         echo "#SBATCH --partition=${queue}" >> ${scriptName}
         echo "#SBATCH --mem-per-cpu=${mem}" >> ${scriptName}
@@ -55,8 +71,8 @@ do
 
 	## run fastqc on the raw fastq
 
-	echo -n "fastqc -o ${myDir}/03-fastqc/raw/ ${myDir}/01-download/*/${sampleID}R1*" >> ${scriptName}
-        if [ "${ends}" = PE ]; then echo " ${myDir}/01-download/*/${sampleID}R2*" >> ${scriptName}; fi
+	echo -n "fastqc -o ${myDir}/03-fastqc/raw/ ${myDir}/01-download/*/${sampleID}_R1*" >> ${scriptName}
+        if [ "${ends}" = PE ]; then echo " ${myDir}/01-download/*/${sampleID}_R2*" >> ${scriptName}; fi
 	echo -e "\n" >> ${scriptName}
 
 	## run fastqc on the trimmed fastq
@@ -69,6 +85,8 @@ do
 	chmod u+x ${scriptName}
 
         slurmids="${slurmids}:$(sbatch --parsable ${scriptName})"
+
+        index=$(( $index + 1))
 
 done
 
