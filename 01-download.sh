@@ -64,12 +64,12 @@ do
 	
 	##Download the data
 	echo -e "
-	echo Downloading ${DOWNLOADURL[$url]}
+	echo Downloading link ${url}
 	curl -s -o ${SCRATCHPATH}/01-download/download${url} ${LINK}
-        echo Download ${DOWNLOADURL[$url]} complete
+        echo Download link ${url} complete
 
 	##Save the run name to a variable and rename the zip file
-	RUN=\$(tar -tf ${SCRATCHPATH}/01-download/download${url} | head -n 1)
+	RUN=\$(tar -tf ${SCRATCHPATH}/01-download/download${url} | head -n 1 | sed 's/\/$//')
 	#RUN=\$(unzip -Z -1 ${SCRATCHPATH}/01-download/download${url}.zip | head -n 1 | sed -E 's/(.+)\/$/\1/')
 	mv ${SCRATCHPATH}/01-download/download${url} ${SCRATCHPATH}/01-download/\${RUN}.tar.gz
 
