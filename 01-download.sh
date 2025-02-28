@@ -69,7 +69,7 @@ do
         echo Download link ${url} complete
 
 	##Save the run name to a variable and rename the zip file
-	RUN=\$(tar -tf ${SCRATCHPATH}/01-download/download${url} | head -n 1 | sed 's/\/$//')
+	RUN=\$(tar -tf ${SCRATCHPATH}/01-download/download${url} | head -n 1 | sed 's/([^\/]+)\/$/\1/')
 	#RUN=\$(unzip -Z -1 ${SCRATCHPATH}/01-download/download${url}.zip | head -n 1 | sed -E 's/(.+)\/$/\1/')
 	mv ${SCRATCHPATH}/01-download/download${url} ${SCRATCHPATH}/01-download/\${RUN}.tar.gz
 
