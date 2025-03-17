@@ -67,19 +67,23 @@ do
         ## load the module
         echo "module load $FASTP
 
+        sampleIter=\$(( \${SLURM_ARRAY_TASK_ID} + ${loopSetup[$index]} ))
+        sampleID=\$(cat ${myDir}/01-download/SampleFileNames.txt | sed -n \$(( \${sampleIter} + 1 ))p)
+        echo \${sampleID}
+
         ##Find the path to the file
-        LOCATION=\$(find ${myDir}/01-download/ -name ${sampleID}R1* | sed -E 's/(.+)\/.+/\1/')
+        LOCATION=\$(find ${myDir}/01-download/ -name \${sampleID}R1* | sed -E 's/(.+)\/.+/\1/')
 
 	## ascertain the format of the end of the file name
-	FILEND=\$(ls \${LOCATION}/${sampleID}R1* | sed -E 's/.+_R1(.+)/\1/')" >> ${scriptName}
+	FILEND=\$(ls \${LOCATION}/\${sampleID}R1* | sed -E 's/.+_R1(.+)/\1/')" >> ${scriptName}
 
         ## run the command
-        echo "fastp -h ${myDir}/02-trim/trim_${sampleID}.html \\
-        -i \${LOCATION}/${sampleID}R1\${FILEND} \\" >> ${scriptName}
+        echo "fastp -h ${myDir}/02-trim/trim_\${sampleID}.html \\
+        -i \${LOCATION}/\${sampleID}R1\${FILEND} \\" >> ${scriptName}
         if [ ! "${adapt}" = "" ]; then echo "-a ${adapt} \\" >> ${scriptName}; fi
-        if [ "${ends}" = PE ]; then echo "-I \${LOCATION}/${sampleID}R2\${FILEND} \\" >> ${scriptName}; fi
-        echo "-o ${myDir}/02-trim/trim_${sampleID}_R1\${FILEND} \\" >> ${scriptName}
-        if [ "${ends}" = PE ]; then echo "-O ${myDir}/02-trim/trim_${sampleID}_R2\${FILEND} \\" >> ${scriptName}; fi
+        if [ "${ends}" = PE ]; then echo "-I \${LOCATION}/\${sampleID}R2\${FILEND} \\" >> ${scriptName}; fi
+        echo "-o ${myDir}/02-trim/trim_\${sampleID}_R1\${FILEND} \\" >> ${scriptName}
+        if [ "${ends}" = PE ]; then echo "-O ${myDir}/02-trim/trim_\${sampleID}_R2\${FILEND} \\" >> ${scriptName}; fi
 	##Set the minimum phred score to 20, with no more than 10% bases allowed to drop below that
 	echo "-q 20 \\
 	-u 10 \\" >> ${scriptName}
