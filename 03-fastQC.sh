@@ -58,7 +58,7 @@ do
         touch ${scriptName}
 
         ## write the SLURM parameters to the top of the script
-	echo "#!/bin/bash" >> ${scriptName} 
+	echo "#!/bin/bash" > ${scriptName} 
         echo "#SBATCH --partition=${queue}" >> ${scriptName}
         echo "#SBATCH --mem-per-cpu=${mem}" >> ${scriptName}
         echo "#SBATCH --nodes=${nodes}" >> ${scriptName}
