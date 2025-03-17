@@ -70,16 +70,21 @@ do
 
 	echo "module load ${FASTQC}" >> ${scriptName}	
 
+        echo "sampleIter=\$(( \${SLURM_ARRAY_TASK_ID} + ${loopSetup[$index]} ))
+        sampleID=\$(cat ${myDir}/01-download/SampleFileNames.txt | sed -n \$(( \${sampleIter} + 1 ))p)
+        echo \${sampleID}" >> ${scriptName}
+
+
 	## run fastqc on the raw fastq
 
-	echo -n "fastqc -o ${myDir}/03-fastqc/raw/ ${myDir}/01-download/*/${sampleID}_R1*" >> ${scriptName}
-        if [ "${ends}" = PE ]; then echo " ${myDir}/01-download/*/${sampleID}_R2*" >> ${scriptName}; fi
+	echo -n "fastqc -o ${myDir}/03-fastqc/raw/ ${myDir}/01-download/*/\${sampleID}_R1*" >> ${scriptName}
+        if [ "${ends}" = PE ]; then echo " ${myDir}/01-download/*/\${sampleID}_R2*" >> ${scriptName}; fi
 	echo -e "\n" >> ${scriptName}
 
 	## run fastqc on the trimmed fastq
 
-	echo -n "fastqc -o ${myDir}/03-fastqc/trimmed/ ${myDir}/02-trim/trim_${sampleID}_R1*" >> ${scriptName}
-        if [ "${ends}" = PE ]; then echo " ${myDir}/02-trim/trim_${sampleID}_R2*" >> ${scriptName}; fi
+	echo -n "fastqc -o ${myDir}/03-fastqc/trimmed/ ${myDir}/02-trim/trim_\${sampleID}_R1*" >> ${scriptName}
+        if [ "${ends}" = PE ]; then echo " ${myDir}/02-trim/trim_\${sampleID}_R2*" >> ${scriptName}; fi
 
 	echo -e "\nexit 0" >> ${scriptName}
 
