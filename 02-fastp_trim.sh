@@ -60,6 +60,7 @@ do
         echo "#SBATCH --nodes=1" >> ${scriptName}
         echo "#SBATCH --tasks-per-node=${cpu}" >> ${scriptName}
 	echo "#SBATCH --time=${runTime}" >> ${scriptName}
+        echo "#SBATCH --array=1-${nSamps}" >> ${scriptName}
         echo "#SBATCH --output ${myDir}/OUT/${scriptBase}${jobName}.%J" >> ${scriptName}
         echo "#SBATCH --error ${myDir}/ERR/${scriptBase}${jobName}.%J" >> ${scriptName}
 
